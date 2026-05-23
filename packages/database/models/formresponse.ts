@@ -1,9 +1,10 @@
-import { pgTable, uuid, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, uuid, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
 import { formsTable } from "./form";
 import { usersTable } from "./user";
 
 export const formResponsesTable = pgTable("form_responses", {
   id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 80 }),
 
   formId: uuid("form_id")
     .notNull()

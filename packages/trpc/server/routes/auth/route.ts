@@ -24,7 +24,6 @@ import {
   AUTHENTICATION_COOKIE_NAME_REFRESH,
   clearAuthenticationCookie,
   defaultCookieOptions,
-  getAuthenticationCookie,
   setAuthenticationCookie,
 } from "../../cookie";
 import { zodUndefinedModel } from "../../schema";

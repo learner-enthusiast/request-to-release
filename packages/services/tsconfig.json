@@ -1,3 +1,10 @@
 {
-  "extends": ["@repo/typescript-config/node.json"]
+  "extends": "@repo/typescript-config/node.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  }
 }

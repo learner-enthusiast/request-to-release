@@ -2,6 +2,7 @@
   "name": "@repo/api",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "dotenv -e ../../.env -- node dist/index.js",
     "dev": "dotenv -e ../../.env -- tsx watch ./src/index.ts",

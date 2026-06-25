@@ -12,6 +12,13 @@ const envSchema = z.object({
   REFRESH_TOKEN_EXPIRY: z.string().default("30d"),
   BETTER_AUTH_SECRET: z.string().min(32, "BETTER_AUTH_SECRET must be at least 32 chars"),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:8000"),
+  GITHUB_APP_ID: z.coerce.number(),
+  GITHUB_APP_SECRET: z.string(),
+  GITHUB_WEBHOOK_SECRET: z.string(),
+  GITHUB_APP_INSTALL_URL: z
+    .string()
+    .url()
+    .default("https://github.com/apps/request-to-release-dev/installations/new"),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {

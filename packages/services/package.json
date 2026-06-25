@@ -2,6 +2,7 @@
   "name": "@repo/services",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
@@ -13,6 +14,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@octokit/types": "^16.0.0",
     "@repo/database": "workspace:*",
     "@repo/errors": "workspace:^",
     "@repo/logger": "workspace:*",
@@ -20,6 +22,7 @@
     "google-auth-library": "^10.5.0",
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.3",
+    "octokit": "^5.0.5",
     "zod": "^4.3.5"
   }
 }

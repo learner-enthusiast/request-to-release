@@ -3,7 +3,10 @@ import { createAuthClient } from 'better-auth/react'
 import { env } from '~/env'
 
 export const authClient = createAuthClient({
-    baseURL: env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000',
+    baseURL: env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:8000',
+    fetchOptions: {
+        credentials: 'include',
+    },
 })
 export const { signIn, signUp, signOut, useSession } = authClient
 export async function signUpWithEmail(input: {
@@ -42,5 +45,6 @@ export async function signInWithSocial(opts: {
 }) {
     return signIn.social({
         provider: opts.provider,
+        callbackURL: opts.callbackURL ?? '/',
     })
 }

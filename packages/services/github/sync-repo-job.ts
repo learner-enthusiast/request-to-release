@@ -5,6 +5,7 @@ import { inngest } from "../inngest/client.js";
 import { chunkRepoFiles } from "./chunk-repo-code.js";
 import { getRepoFiles } from "./repo-files.js";
 import { buildRepoNamespace, deleteRepoNamespace, saveRepoChunks } from "./vector.js";
+import { errors } from "@repo/errors";
 
 export const syncRepoCodebaseJob = inngest.createFunction(
   { id: "sync-repo-codebase", triggers: { event: "repo/sync.requested" } },
@@ -14,7 +15,7 @@ export const syncRepoCodebaseJob = inngest.createFunction(
     const sync = await step.run("load-sync-row", async () => {
       const [row] = await db.select().from(repoSync).where(eq(repoSync.id, repoSyncId)).limit(1);
 
-      if (!row) throw new Error(`repoSync not found: ${repoSyncId}`);
+      if (!row) return errors.notFound(`repoSync not found: ${repoSyncId}`);
       return row;
     });
 

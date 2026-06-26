@@ -13,6 +13,7 @@ import { getPullRequestFiles } from "./pr-files.js";
 import { chunkPrFiles } from "./chunk-code.js";
 import { generateReview } from "./generate-review.js";
 import { postPrComment } from "./post-pr-comment.js";
+import { errors } from "@repo/errors";
 
 export const reviewPullRequest = inngest.createFunction(
   { id: "review-pull-request", triggers: { event: "github/pr.received" } },
@@ -26,7 +27,7 @@ export const reviewPullRequest = inngest.createFunction(
         .where(eq(pullRequest.id, pullRequestId))
         .returning();
 
-      if (!updated) throw new Error(`Pull request not found: ${pullRequestId}`);
+      if (!updated) return errors.notFound(`Pull request not found: ${pullRequestId}`);
       return updated;
     });
 

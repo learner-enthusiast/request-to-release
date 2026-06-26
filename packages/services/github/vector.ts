@@ -29,3 +29,20 @@ export async function searchPrContext(namespace: string, query: string): Promise
   }
   return snippets;
 }
+const UPSERT_BATCH_SIZE = 90;
+
+export async function deleteRepoNamespace(namespace: string) {
+  const index = getPineconeIndex();
+  await index.deleteNamespace(namespace);
+}
+
+export async function saveRepoChunks(namespace: string, chunks: CodeChunk[]) {
+  const index = getPineconeIndex();
+
+  for (let start = 0; start < chunks.length; start += UPSERT_BATCH_SIZE) {
+    const batch = chunks.slice(start, start + UPSERT_BATCH_SIZE);
+    await index.namespace(namespace).upsertRecords({
+      records: batch.map((c) => ({ id: c.id, text: c.text, filePath: c.filePath })),
+    });
+  }
+}

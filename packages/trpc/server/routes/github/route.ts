@@ -1,7 +1,11 @@
 import {
   deleteInstallationOutputSchema,
+  getInstallationReposOutputSchema,
+  getInstallationReposQueryInputSchema,
   getInstallationStatusOutputSchema,
   getInstallUrlOutputSchema,
+  getRepoSyncStatusesOutputSchema,
+  getRepoSyncStatusesQueryInputSchema,
   getUserIdByInstallationIdMutationInputSchema,
   getUserIdByInstallationIdOutputSchema,
   getUserInstallationIdOutputSchema,
@@ -13,7 +17,11 @@ import {
 import { getGithubInstallUrl } from "@repo/services/Octokit";
 
 import { z, zodUndefinedModel } from "../../schema";
-import { githubInstallationService, githubSyncRepoCodebaseService } from "../../services";
+import {
+  githubInstallationService,
+  githubRepositoriesService,
+  githubSyncRepoCodebaseService,
+} from "../../services";
 import { authenticatedProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 
@@ -83,6 +91,30 @@ export const githubRouter = router({
         userId: ctx.user,
         repoFullName: input.repoFullName,
         branch: input.branch,
+      });
+    }),
+  getInstallationRepos: authenticatedProcedure
+    .meta({
+      openapi: { method: "GET", path: getPath("/repos"), tags: TAGS },
+    })
+    .input(getInstallationReposQueryInputSchema)
+    .output(getInstallationReposOutputSchema)
+    .query(async ({ ctx, input }) => {
+      return githubRepositoriesService.getInstallationReposPage({
+        userId: ctx.user,
+        page: input.page,
+      });
+    }),
+  getRepoSyncStatuses: authenticatedProcedure
+    .meta({
+      openapi: { method: "POST", path: getPath("/repo-sync/statuses"), tags: TAGS },
+    })
+    .input(getRepoSyncStatusesQueryInputSchema)
+    .output(getRepoSyncStatusesOutputSchema)
+    .query(async ({ ctx, input }) => {
+      return githubSyncRepoCodebaseService.getRepoSyncStatuses({
+        userId: ctx.user,
+        repoFullNames: input.repoFullNames,
       });
     }),
 });

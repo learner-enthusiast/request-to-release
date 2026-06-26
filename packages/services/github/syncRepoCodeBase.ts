@@ -1,12 +1,17 @@
 import { randomUUID } from "node:crypto";
-import { db, eq } from "@repo/database";
+import { db, eq, inArray } from "@repo/database";
 import { repoSync } from "@repo/database/schema";
 import { errors } from "@repo/errors";
-import { logger } from "@repo/logger";
 
 import { getInstallationOctokit } from "../Octokit/index.js";
+import { inngest } from "../inngest/client.js";
 import GithubInstallationService from "./installation.js";
-import type { SyncRepoCodebaseInput, SyncRepoCodebaseOutput } from "./model.js";
+import type {
+  GetRepoSyncStatusesInput,
+  GetRepoSyncStatusesOutput,
+  SyncRepoCodebaseInput,
+  SyncRepoCodebaseOutput,
+} from "./model.js";
 
 function parseRepoFullName(repoFullName: string): { owner: string; repo: string } {
   const [owner, repo] = repoFullName.split("/");
@@ -23,15 +28,13 @@ export default class GithubRepoSyncService {
     const { userId, repoFullName, branch } = input;
 
     const { installationId } = await this.installations.getUserInstallationId({ userId });
-
     if (!installationId) {
       return errors.forbidden("GitHub App not connected");
     }
 
     const { owner, repo } = parseRepoFullName(repoFullName);
-
-    // Verify the installation can access this repo
     const octokit = await getInstallationOctokit(installationId);
+
     try {
       await octokit.rest.repos.get({ owner, repo });
     } catch {
@@ -61,18 +64,32 @@ export default class GithubRepoSyncService {
         },
       });
 
-    // TODO: enqueue background job (inngest / queue) to fetch + chunk repo files
-    logger.info("Repo sync triggered", { userId, repoFullName, branch, installationId });
-
     const [row] = await db
       .select({ id: repoSync.id })
       .from(repoSync)
       .where(eq(repoSync.repoFullName, repoFullName))
       .limit(1);
 
-    return {
-      repoSyncId: row?.id ?? repoSyncId,
-      status: "pending",
-    };
+    const id = row?.id ?? repoSyncId;
+
+    await inngest.send({
+      name: "repo/sync.requested",
+      data: { repoSyncId: id },
+    });
+
+    return { repoSyncId: id, status: "pending" };
+  }
+
+  async getRepoSyncStatuses(input: GetRepoSyncStatusesInput): Promise<GetRepoSyncStatusesOutput> {
+    const rows = await db
+      .select({ repoFullName: repoSync.repoFullName, status: repoSync.status })
+      .from(repoSync)
+      .where(inArray(repoSync.repoFullName, input.repoFullNames));
+
+    const statuses: GetRepoSyncStatusesOutput = {};
+    for (const row of rows) {
+      statuses[row.repoFullName] = row.status as GetRepoSyncStatusesOutput[string];
+    }
+    return statuses;
   }
 }

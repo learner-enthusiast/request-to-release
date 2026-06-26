@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@octokit/types": "^16.0.0",
+    "@octokit/webhooks-methods": "^6.0.0",
     "@repo/database": "workspace:*",
     "@repo/errors": "workspace:^",
     "@repo/logger": "workspace:*",

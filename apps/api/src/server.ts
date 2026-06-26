@@ -13,6 +13,7 @@ import { serverRouter, createContext } from "@repo/trpc/server";
 import helmet from "helmet";
 import { env } from "./env.js";
 import { errorHandler } from "./middleware/error-handler.js";
+import { webhookRouter } from "./routes/webhook.js";
 
 export const app = express();
 const openApiDocument = generateOpenApiDocument(serverRouter, {
@@ -48,6 +49,7 @@ app.use(
         : false,
   }),
 );
+app.use("/api/webhooks", webhookRouter);
 app.use(express.json());
 app.use(cookieParser());
 app.use((req, res, next) => {

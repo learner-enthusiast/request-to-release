@@ -99,7 +99,48 @@ export const getUserIdByInstallationIdMutationInputSchema = z.object({
   installationId: installationIdSchema,
 });
 // --- parser ---
+export type PullRequestWebhookPayload = {
+  action: string;
+  installation?: { id: number };
+  repository: { full_name: string };
+  pull_request: {
+    number: number;
+    title: string;
+    head: { sha: string };
+    base: { ref: string };
+    user: { login?: string | null } | null;
+  };
+};
 
+export type GithubWebhookResult = {
+  received: true;
+  handled?: boolean;
+  rateLimited?: boolean;
+};
+export const syncRepoCodebaseInputSchema = z.object({
+  userId: userIdSchema,
+  repoFullName: z
+    .string()
+    .trim()
+    .regex(/^[^/]+\/[^/]+$/, "repoFullName must be owner/repo"),
+  branch: z.string().trim().min(1, "branch is required"),
+});
+
+export const syncRepoCodebaseMutationInputSchema = z.object({
+  repoFullName: z
+    .string()
+    .trim()
+    .regex(/^[^/]+\/[^/]+$/, "repoFullName must be owner/repo"),
+  branch: z.string().trim().min(1, "branch is required"),
+});
+
+export const syncRepoCodebaseOutputSchema = z.object({
+  repoSyncId: z.string(),
+  status: z.literal("pending"),
+});
+
+export type SyncRepoCodebaseInput = z.infer<typeof syncRepoCodebaseInputSchema>;
+export type SyncRepoCodebaseOutput = z.infer<typeof syncRepoCodebaseOutputSchema>;
 export function parseInput<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
   try {
     return schema.parse(input);

@@ -19,7 +19,7 @@ import type {
   SaveInstallationInput,
   SaveInstallationOutput,
 } from "./model.ts";
-import { logger } from "@repo/logger";
+
 function isGithubRequestError(error: unknown): error is { status: number; message: string } {
   return (
     typeof error === "object" &&

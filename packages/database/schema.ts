@@ -1,2 +1,7 @@
-export * from "./models/auth-schema";
-export * from "./models/github-schema";
+export * from "./models/auth-schema.js";
+export {
+  githubInstallation,
+  pullRequest,
+  repoSync,
+  githubInstallationRelations,
+} from "./models/github-schema.js";

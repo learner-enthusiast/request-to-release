@@ -1,7 +1,7 @@
 import { AppError, ErrorCode } from "@repo/errors";
 import { logger } from "@repo/logger";
 import type { ErrorRequestHandler } from "express";
-import { env } from "../env";
+import { env } from "../env.js";
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const appError =

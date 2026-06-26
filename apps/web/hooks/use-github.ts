@@ -58,7 +58,9 @@ export function useSaveGithubInstallation() {
         },
     })
 }
-
+export function useSyncRepoCodebase() {
+    return trpc.github.syncRepoCodebase.useMutation()
+}
 /** Remove linked GitHub App installation for current user */
 export function useDisconnectGithub() {
     const utils = trpc.useUtils()
@@ -80,12 +82,14 @@ export function useGithub() {
     const installationId = useGithubInstallationId()
     const saveInstallation = useSaveGithubInstallation()
     const disconnect = useDisconnectGithub()
+    const syncRepoCodebase = useSyncRepoCodebase()
 
     return {
         status,
         installUrl,
         installationId,
         saveInstallation,
+        syncRepoCodebase,
         disconnect,
         isConnected: status.data?.connected === true,
         accountLogin: status.data?.connected ? status.data.accountLogin : null,

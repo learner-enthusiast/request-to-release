@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
+    "@repo/services": "workspace:*",
     "@repo/errors": "workspace:^",
     "@repo/logger": "workspace:*",
     "@repo/trpc": "workspace:*",

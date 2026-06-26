@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { index, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 
-import { user } from "./auth-schema";
+import { user } from "./auth-schema.js";
 
 export const githubInstallation = pgTable(
   "github_installation",

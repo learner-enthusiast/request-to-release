@@ -7,11 +7,13 @@ import {
   getUserInstallationIdOutputSchema,
   saveInstallationMutationInputSchema,
   saveInstallationOutputSchema,
+  syncRepoCodebaseMutationInputSchema,
+  syncRepoCodebaseOutputSchema,
 } from "@repo/services/github/model";
 import { getGithubInstallUrl } from "@repo/services/Octokit";
 
 import { z, zodUndefinedModel } from "../../schema";
-import { githubInstallationService } from "../../services";
+import { githubInstallationService, githubSyncRepoCodebaseService } from "../../services";
 import { authenticatedProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 
@@ -66,9 +68,21 @@ export const githubRouter = router({
 
   disconnect: authenticatedProcedure
     .meta({ openapi: { method: "DELETE", path: getPath("/installation"), tags: TAGS } })
-    .input(zodUndefinedModel)
     .output(deleteInstallationOutputSchema)
     .mutation(async ({ ctx }) => {
       return githubInstallationService.deleteInstallation({ userId: ctx.user });
+    }),
+  syncRepoCodebase: authenticatedProcedure
+    .meta({
+      openapi: { method: "POST", path: getPath("/repo-sync"), tags: TAGS },
+    })
+    .input(syncRepoCodebaseMutationInputSchema)
+    .output(syncRepoCodebaseOutputSchema)
+    .mutation(async ({ ctx, input }) => {
+      return githubSyncRepoCodebaseService.triggerRepoSync({
+        userId: ctx.user,
+        repoFullName: input.repoFullName,
+        branch: input.branch,
+      });
     }),
 });

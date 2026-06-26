@@ -19,6 +19,7 @@ import type {
   SaveInstallationInput,
   SaveInstallationOutput,
 } from "./model.ts";
+
 function isGithubRequestError(error: unknown): error is { status: number; message: string } {
   return (
     typeof error === "object" &&
@@ -149,19 +150,36 @@ export default class GithubInstallationService {
   async deleteInstallation(input: DeleteInstallationInput): Promise<DeleteInstallationOutput> {
     assertUserId(input.userId);
 
-    try {
-      const [deleted] = await db
-        .delete(githubInstallation)
-        .where(eq(githubInstallation.userId, input.userId))
-        .returning({ id: githubInstallation.id });
+    const [installation] = await db
+      .select({ installationId: githubInstallation.installationId })
+      .from(githubInstallation)
+      .where(eq(githubInstallation.userId, input.userId))
+      .limit(1);
 
-      if (!deleted) {
-        errors.notFound("GitHub installation");
-      }
+    if (!installation) {
+      return errors.notFound("GitHub installation");
+    }
+
+    const { installationId } = installation;
+    const app = await getGithubApp();
+
+    try {
+      await app.octokit.request("DELETE /app/installations/{installation_id}", {
+        installation_id: installationId,
+      });
     } catch (error) {
-      if (error instanceof Error && error.name === "AppError") {
-        throw error;
+      // Already uninstalled on GitHub — still clean up locally
+      if (isGithubRequestError(error) && error.status === 404) {
+        errors.notFound(`GitHub installation ${installationId}`);
+      } else {
+        handleGithubRequestError(error, installationId);
       }
+    }
+
+    try {
+      await db.delete(githubInstallation).where(eq(githubInstallation.userId, input.userId));
+    } catch (error) {
+      if (error instanceof Error && error.name === "AppError") throw error;
       handleDbError(error);
     }
 

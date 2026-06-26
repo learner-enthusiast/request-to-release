@@ -66,7 +66,6 @@ export const githubRouter = router({
 
   disconnect: authenticatedProcedure
     .meta({ openapi: { method: "DELETE", path: getPath("/installation"), tags: TAGS } })
-    .input(zodUndefinedModel)
     .output(deleteInstallationOutputSchema)
     .mutation(async ({ ctx }) => {
       return githubInstallationService.deleteInstallation({ userId: ctx.user });

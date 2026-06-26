@@ -19,6 +19,9 @@ const envSchema = z.object({
     .string()
     .url()
     .default("https://github.com/apps/request-to-release-dev/installations/new"),
+  PINECONE_API_KEY: z.string(),
+  PINECONE_INDEX: z.string(),
+  OPENROUTER_API_KEY: z.string(),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {

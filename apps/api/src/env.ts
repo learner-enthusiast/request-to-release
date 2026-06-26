@@ -7,7 +7,12 @@ const envSchema = z.object({
   CORS_ORIGIN: z
     .string()
     .default("http://localhost:3000")
-    .transform((s) => s.split(",").map((o) => o.trim()).filter(Boolean)),
+    .transform((s) =>
+      s
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {

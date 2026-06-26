@@ -14,6 +14,7 @@ import helmet from "helmet";
 import { env } from "./env.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { webhookRouter } from "./routes/webhook.js";
+import { inngestRouter } from "./routes/inngest.js";
 
 export const app = express();
 const openApiDocument = generateOpenApiDocument(serverRouter, {
@@ -50,6 +51,7 @@ app.use(
   }),
 );
 app.use("/api/webhooks", webhookRouter);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use((req, res, next) => {
@@ -66,7 +68,7 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
   return res.json({ message: "Streamyst is up and running..." });
 });
-
+app.use("/api/inngest", inngestRouter);
 app.get("/health", (req, res) => {
   return res.json({ message: "Streamyst server is healthy", healthy: true });
 });

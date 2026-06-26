@@ -141,6 +141,15 @@ export const syncRepoCodebaseOutputSchema = z.object({
 
 export type SyncRepoCodebaseInput = z.infer<typeof syncRepoCodebaseInputSchema>;
 export type SyncRepoCodebaseOutput = z.infer<typeof syncRepoCodebaseOutputSchema>;
+
+export const codeChunkSchema = z.object({
+  id: z.string(),
+  filePath: z.string(),
+  text: z.string(),
+});
+
+export type CodeChunk = z.infer<typeof codeChunkSchema>;
+
 export function parseInput<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
   try {
     return schema.parse(input);

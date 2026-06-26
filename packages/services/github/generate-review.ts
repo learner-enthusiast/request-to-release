@@ -3,7 +3,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { env } from "../env.js";
 
 const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY });
-const REVIEW_MODEL = "anthropic/claude-3.5-sonnet";
+const REVIEW_MODEL = "openrouter/free";
 
 const SYSTEM_PROMPT = `You are a senior engineer reviewing a pull request.
 Be concise, actionable, and focus on bugs, security, and design issues.`;

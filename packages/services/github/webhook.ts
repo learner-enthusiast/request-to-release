@@ -42,7 +42,8 @@ export default class GithubWebhookService {
     }
 
     const event = JSON.parse(input.payload) as Record<string, unknown>;
-
+    console.log("event", event);
+    console.log("input.eventName", input.eventName);
     if (input.eventName === "installation" && event.action === "deleted") {
       const installationId = (event.installation as { id: number }).id;
       await this.handleInstallationDeleted(installationId);

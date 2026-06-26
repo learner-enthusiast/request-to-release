@@ -3,8 +3,23 @@
 import Link from 'next/link'
 import { useAuth } from '~/providers/auth'
 import { Button } from '~/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+
 import { Skeleton } from '~/components/ui/skeleton'
+import Image from 'next/image'
+import { ModeToggle } from './modeToggle'
+import Avatar from './Avatar'
+
+import { LogOut, Menu, Settings, User } from 'lucide-react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
+import { useRouter } from 'next/navigation'
 
 function getInitials(name?: string | null, email?: string | null) {
     if (name) {
@@ -18,59 +33,88 @@ function getInitials(name?: string | null, email?: string | null) {
     return email?.[0]?.toUpperCase() ?? '?'
 }
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick: () => void }) {
     const { user, isPending, isAuthenticated, signOut } = useAuth()
-
+    const router = useRouter()
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-                <Link href="/" className="font-semibold tracking-tight">
-                    Streamyst
-                </Link>
+        <header className="sticky top-0 z-50 w-full border-b bg-background backdrop-blur supports-backdrop-filter:bg-background/60">
+            <div className="mx-auto flex h-28 max-w-full items-center justify-between px-8">
+                <span className="flex items-center gap-4">
+                    {isAuthenticated && (
+                        <Menu
+                            onClick={onMenuClick}
+                            className="cursor-pointer"
+                        />
+                    )}
+                    <span className="flex items-center gap-2">
+                        <Image
+                            src="/Logo.svg"
+                            alt="Logo"
+                            width={50}
+                            height={50}
+                        />
+                        <p className="font-josefin text-[35px] uppercase leading-none">
+                            {isAuthenticated
+                                ? user?.name
+                                : ' Request to Release'}
+                        </p>
+                    </span>
+                </span>
 
-                <div className="flex items-center gap-3">
-                    {isPending ? (
-                        <Skeleton className="h-8 w-24 rounded-full" />
-                    ) : isAuthenticated && user ? (
-                        <>
-                            <div className="flex items-center gap-2">
-                                <Avatar size="sm">
-                                    {user.image ? (
-                                        <AvatarImage
-                                            src={user.image}
-                                            alt={user.name ?? 'User'}
-                                        />
-                                    ) : null}
-                                    <AvatarFallback>
-                                        {getInitials(user.name, user.email)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="hidden flex-col sm:flex">
-                                    <span className="text-sm font-medium leading-none">
+                <span className="flex items-center gap-4">
+                    <ModeToggle />
+                    {isAuthenticated && user && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <Avatar
+                                    src={user.image ?? ''}
+                                    alt={user.name ?? ''}
+                                    badgeColor="green"
+                                />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" side="bottom">
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>
                                         {user.name}
-                                    </span>
-                                    <span className="text-muted-foreground text-xs">
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuLabel className="font-normal text-muted-foreground">
                                         {user.email}
-                                    </span>
-                                </div>
-                            </div>
+                                    </DropdownMenuLabel>
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    <DropdownMenuItem>
+                                        <User />
+                                        Profile
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Settings />
+                                        Settings
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    variant="destructive"
+                                    onClick={() =>
+                                        signOut({ redirectTo: '/signIn' })
+                                    }
+                                >
+                                    <LogOut />
+                                    Sign out
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
 
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                    signOut({ redirectTo: '/signIn' })
-                                }
-                            >
-                                Sign out
-                            </Button>
-                        </>
-                    ) : (
-                        <Button variant="outline" size="sm">
-                            <Link href="/signIn">Sign in</Link>
+                    {!isAuthenticated && (
+                        <Button
+                            size="lg"
+                            onClick={() => router.push('/signIn')}
+                        >
+                            Sign In
                         </Button>
                     )}
-                </div>
+                </span>
             </div>
         </header>
     )

@@ -11,8 +11,8 @@ import { apiReference } from "@scalar/express-api-reference";
 
 import { serverRouter, createContext } from "@repo/trpc/server";
 import helmet from "helmet";
-import { env } from "./env";
-import { errorHandler } from "./middleware/error-handler";
+import { env } from "./env.js";
+import { errorHandler } from "./middleware/error-handler.js";
 
 export const app = express();
 const openApiDocument = generateOpenApiDocument(serverRouter, {

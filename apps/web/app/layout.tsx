@@ -41,6 +41,7 @@ export default function RootLayout({
                 montserrat.variable,
                 playfairDisplayHeading.variable
             )}
+            suppressHydrationWarning
         >
             <body className={`${geistSans.variable} ${geistMono.variable}`}>
                 <GlobalProviders>

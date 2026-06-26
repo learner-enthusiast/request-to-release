@@ -53,6 +53,7 @@ export function GlobalProviders({ children }: { children: ReactNode }) {
                 <trpc.Provider client={trpcClient} queryClient={queryClient}>
                     <AuthProvider>
                         {children}
+
                         <Toaster />
                     </AuthProvider>
                 </trpc.Provider>

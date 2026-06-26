@@ -141,6 +141,71 @@ export const syncRepoCodebaseOutputSchema = z.object({
 
 export type SyncRepoCodebaseInput = z.infer<typeof syncRepoCodebaseInputSchema>;
 export type SyncRepoCodebaseOutput = z.infer<typeof syncRepoCodebaseOutputSchema>;
+
+export const codeChunkSchema = z.object({
+  id: z.string(),
+  filePath: z.string(),
+  text: z.string(),
+});
+
+export type CodeChunk = z.infer<typeof codeChunkSchema>;
+// --- GitHub repos ---
+
+export const githubRepoVisibilitySchema = z.enum(["public", "private"]);
+
+export const githubRepoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  fullName: z.string(),
+  visibility: githubRepoVisibilitySchema,
+  defaultBranch: z.string(),
+  updatedAt: z.string(), // ISO
+  language: z.string().nullable(),
+  stars: z.number().int().nonnegative(),
+});
+
+export const getInstallationReposInputSchema = z.object({
+  userId: userIdSchema,
+  page: z.number().int().positive().default(1),
+});
+
+/** tRPC / OpenAPI — userId comes from ctx.user */
+export const getInstallationReposQueryInputSchema = z.object({
+  page: z.number().int().positive().default(1),
+});
+
+export const getInstallationReposOutputSchema = z.object({
+  repos: z.array(githubRepoSchema),
+  totalCount: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  hasMore: z.boolean(),
+});
+
+export type GithubRepo = z.infer<typeof githubRepoSchema>;
+export type GetInstallationReposInput = z.infer<typeof getInstallationReposInputSchema>;
+export type GetInstallationReposQueryInput = z.infer<typeof getInstallationReposQueryInputSchema>;
+export type GetInstallationReposOutput = z.infer<typeof getInstallationReposOutputSchema>;
+export type RepoFile = {
+  filePath: string;
+  content: string;
+};
+
+export const repoSyncStatusSchema = z.enum(["pending", "syncing", "synced", "failed"]);
+
+export const getRepoSyncStatusesInputSchema = z.object({
+  userId: userIdSchema,
+  repoFullNames: z.array(z.string().trim().min(1)).min(1).max(100),
+});
+
+export const getRepoSyncStatusesQueryInputSchema = z.object({
+  repoFullNames: z.array(z.string().trim().min(1)).min(1).max(100),
+});
+
+export const getRepoSyncStatusesOutputSchema = z.record(z.string(), repoSyncStatusSchema);
+
+export type GetRepoSyncStatusesInput = z.infer<typeof getRepoSyncStatusesInputSchema>;
+export type GetRepoSyncStatusesQueryInput = z.infer<typeof getRepoSyncStatusesQueryInputSchema>;
+export type GetRepoSyncStatusesOutput = z.infer<typeof getRepoSyncStatusesOutputSchema>;
 export function parseInput<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
   try {
     return schema.parse(input);

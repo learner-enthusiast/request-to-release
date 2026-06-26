@@ -74,6 +74,20 @@ export function useDisconnectGithub() {
         },
     })
 }
+/** One page of repos for the user's GitHub App installation */
+export function useGithubInstallationRepos(page = 1) {
+    const enabled = useGithubQueryEnabled()
+
+    return trpc.github.getInstallationRepos.useQuery({ page }, { enabled })
+}
+export function useRepoSyncStatuses(repoFullNames: string[]) {
+    const enabled = useGithubQueryEnabled() && repoFullNames.length > 0
+    return trpc.github.getRepoSyncStatuses.useQuery(
+        { repoFullNames },
+        { enabled }
+    )
+}
+/** Infinite scroll — call `fetchNextPage()` while `hasNextPage` is true */
 
 /** Convenience bundle for dashboard / settings UI */
 export function useGithub() {
@@ -83,6 +97,7 @@ export function useGithub() {
     const saveInstallation = useSaveGithubInstallation()
     const disconnect = useDisconnectGithub()
     const syncRepoCodebase = useSyncRepoCodebase()
+    const installationRepos = useGithubInstallationRepos()
 
     return {
         status,
@@ -94,5 +109,6 @@ export function useGithub() {
         isConnected: status.data?.connected === true,
         accountLogin: status.data?.connected ? status.data.accountLogin : null,
         installHref: installUrl.data?.url,
+        installationRepos,
     }
 }

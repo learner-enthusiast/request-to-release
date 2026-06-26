@@ -3,12 +3,13 @@ import { verify } from "@octokit/webhooks-methods";
 import { and, eq, db } from "@repo/database";
 import { pullRequest } from "@repo/database/schema";
 import { errors } from "@repo/errors";
-import { logger } from "@repo/logger";
+import { ingest, logger } from "@repo/logger";
 
 import { env } from "../env.js";
 import GithubInstallationService from "./installation.js";
 import { GithubWebhookResult, PullRequestWebhookPayload } from "./model.js";
 import { canUserReview } from "./usage.js";
+import { inngest } from "../inngest/client.js";
 
 const REVIEWABLE_ACTIONS = ["opened", "synchronize", "reopened"] as const;
 
@@ -83,8 +84,17 @@ export default class GithubWebhookService {
       }
     }
 
-    // TODO: inngest.send({ name: "github/pr.received", data: { pullRequestId: saved.id } })
     logger.info("PR saved from webhook", { pullRequestId: saved.id });
+    await inngest.send({
+      name: "github/pr.received",
+      data: { pullRequestId: saved.id },
+    });
+    await ingest({
+      level: "info",
+      event: "github.webhook.pr.enqueued", // more accurate name
+      message: "PR saved, review enqueued",
+      meta: { pullRequestId: saved.id, installationId: prEvent.installation.id },
+    });
 
     return { received: true, handled: true };
   }

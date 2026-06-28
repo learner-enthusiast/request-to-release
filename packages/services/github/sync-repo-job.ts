@@ -8,7 +8,17 @@ import { buildRepoNamespace, deleteRepoNamespace, saveRepoChunks } from "./vecto
 import { errors } from "@repo/errors";
 
 export const syncRepoCodebaseJob = inngest.createFunction(
-  { id: "sync-repo-codebase", triggers: { event: "repo/sync.requested" } },
+  {
+    id: "sync-repo-codebase",
+    triggers: { event: "repo/sync.requested" },
+    onFailure: async ({ event, step }) => {
+      const repoSyncId = event.data.event.data.repoSyncId as string;
+      await step.run("mark-sync-failed", async () => {
+        await db.update(repoSync).set({ status: "failed" }).where(eq(repoSync.id, repoSyncId));
+      });
+      return { repoSyncId, chunkCount: 0, status: "failed" as const };
+    },
+  },
   async ({ event, step }) => {
     const repoSyncId = event.data.repoSyncId as string;
 
@@ -26,16 +36,20 @@ export const syncRepoCodebaseJob = inngest.createFunction(
     const namespace = buildRepoNamespace(sync.repoFullName);
 
     await step.run("clear-namespace", async () => {
-      await deleteRepoNamespace(namespace);
+      if (sync.syncedAt != null) {
+        await deleteRepoNamespace(namespace);
+      }
     });
 
-    const chunkCount = await step.run("fetch-chunk-and-index", async () => {
+    const chunkCount = await step.run("fetch-chunk-and-save", async () => {
       const files = await getRepoFiles(sync.installationId, sync.repoFullName, sync.branch);
+      if (files.length === 0) return 0;
       const chunks = chunkRepoFiles(files);
       await saveRepoChunks(namespace, chunks);
       return chunks.length;
     });
 
+    await step.sleep("wait-for-vectors-to-index", "20s");
     await step.run("mark-synced", async () => {
       await db
         .update(repoSync)

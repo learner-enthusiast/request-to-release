@@ -9,6 +9,7 @@ import GithubInstallationService from "./installation.js";
 import type {
   GetRepoSyncStatusesInput,
   GetRepoSyncStatusesOutput,
+  RepoSyncStatus,
   SyncRepoCodebaseInput,
   SyncRepoCodebaseOutput,
 } from "./model.js";
@@ -82,13 +83,20 @@ export default class GithubRepoSyncService {
 
   async getRepoSyncStatuses(input: GetRepoSyncStatusesInput): Promise<GetRepoSyncStatusesOutput> {
     const rows = await db
-      .select({ repoFullName: repoSync.repoFullName, status: repoSync.status })
+      .select({
+        repoFullName: repoSync.repoFullName,
+        status: repoSync.status,
+        syncedAt: repoSync.syncedAt,
+      })
       .from(repoSync)
       .where(inArray(repoSync.repoFullName, input.repoFullNames));
 
     const statuses: GetRepoSyncStatusesOutput = {};
     for (const row of rows) {
-      statuses[row.repoFullName] = row.status as GetRepoSyncStatusesOutput[string];
+      statuses[row.repoFullName] = {
+        status: row.status as RepoSyncStatus,
+        syncedAt: row.syncedAt?.toISOString() ?? null,
+      };
     }
     return statuses;
   }

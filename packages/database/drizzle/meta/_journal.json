@@ -15,6 +15,20 @@
       "when": 1782376459244,
       "tag": "0001_brainy_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782656111533,
+      "tag": "0002_high_gideon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782657765706,
+      "tag": "0003_numerous_zeigeist",
+      "breakpoints": true
     }
   ]
 }

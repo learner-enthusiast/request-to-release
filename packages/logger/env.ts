@@ -7,7 +7,12 @@ const envSchema = z.object({
 
 function createEnv(env: NodeJS.ProcessEnv) {
   const safeParseResult = envSchema.safeParse(env);
-  if (!safeParseResult.success) throw new Error(safeParseResult.error.message);
+  if (!safeParseResult.success) {
+    const details = safeParseResult.error.issues
+      .map((issue) => `  - ${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("\n");
+    throw new Error(`Invalid environment variables (@repo/logger):\n${details}`);
+  }
   return safeParseResult.data;
 }
 

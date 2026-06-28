@@ -59,7 +59,13 @@ export function useSaveGithubInstallation() {
     })
 }
 export function useSyncRepoCodebase() {
-    return trpc.github.syncRepoCodebase.useMutation()
+    const utils = trpc.useUtils()
+
+    return trpc.github.syncRepoCodebase.useMutation({
+        onSuccess: async () => {
+            await utils.github.getRepoSyncStatuses.invalidate()
+        },
+    })
 }
 /** Remove linked GitHub App installation for current user */
 export function useDisconnectGithub() {
@@ -80,13 +86,27 @@ export function useGithubInstallationRepos(page = 1) {
 
     return trpc.github.getInstallationRepos.useQuery({ page }, { enabled })
 }
+
 export function useRepoSyncStatuses(repoFullNames: string[]) {
     const enabled = useGithubQueryEnabled() && repoFullNames.length > 0
+
     return trpc.github.getRepoSyncStatuses.useQuery(
         { repoFullNames },
-        { enabled }
+        {
+            enabled,
+            refetchInterval: (query) => {
+                const data = query.state.data
+                if (!data) return false
+                return Object.values(data).some(
+                    (s) => s.status === 'pending' || s.status === 'syncing'
+                )
+                    ? 3000
+                    : false
+            },
+        }
     )
 }
+
 /** Infinite scroll — call `fetchNextPage()` while `hasNextPage` is true */
 
 /** Convenience bundle for dashboard / settings UI */

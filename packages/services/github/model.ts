@@ -191,7 +191,7 @@ export type RepoFile = {
 };
 
 export const repoSyncStatusSchema = z.enum(["pending", "syncing", "synced", "failed"]);
-
+export type RepoSyncStatus = z.infer<typeof repoSyncStatusSchema>;
 export const getRepoSyncStatusesInputSchema = z.object({
   userId: userIdSchema,
   repoFullNames: z.array(z.string().trim().min(1)).min(1).max(100),
@@ -201,11 +201,15 @@ export const getRepoSyncStatusesQueryInputSchema = z.object({
   repoFullNames: z.array(z.string().trim().min(1)).min(1).max(100),
 });
 
-export const getRepoSyncStatusesOutputSchema = z.record(z.string(), repoSyncStatusSchema);
-
 export type GetRepoSyncStatusesInput = z.infer<typeof getRepoSyncStatusesInputSchema>;
 export type GetRepoSyncStatusesQueryInput = z.infer<typeof getRepoSyncStatusesQueryInputSchema>;
 export type GetRepoSyncStatusesOutput = z.infer<typeof getRepoSyncStatusesOutputSchema>;
+
+export const repoSyncInfoSchema = z.object({
+  status: repoSyncStatusSchema,
+  syncedAt: z.string().nullable(), // ISO
+});
+export const getRepoSyncStatusesOutputSchema = z.record(z.string(), repoSyncInfoSchema);
 export function parseInput<T extends z.ZodType>(schema: T, input: unknown): z.infer<T> {
   try {
     return schema.parse(input);

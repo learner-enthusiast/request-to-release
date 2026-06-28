@@ -13,6 +13,9 @@ const envSchema = z.object({
         .map((o) => o.trim())
         .filter(Boolean),
     ),
+  INNGEST_EVENT_KEY: z.string(),
+  INNGEST_DEV: z.string().default("1"),
+  INNGEST_BASE_URL: z.string().url(),
 });
 
 function createEnv(env: NodeJS.ProcessEnv) {

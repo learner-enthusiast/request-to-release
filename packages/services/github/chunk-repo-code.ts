@@ -14,10 +14,12 @@ export function chunkRepoFiles(files: RepoFile[]): CodeChunk[] {
     const lines = file.content.split("\n");
     for (let start = 0; start < lines.length; start += MAX_CHUNK_LINES) {
       const part = start / MAX_CHUNK_LINES;
+      const text = lines.slice(start, start + MAX_CHUNK_LINES).join("\n");
+      if (!text.trim()) continue;
       chunks.push({
         id: buildChunkId(file.filePath, part),
         filePath: file.filePath,
-        text: lines.slice(start, start + MAX_CHUNK_LINES).join("\n"),
+        text: text,
       });
     }
   }

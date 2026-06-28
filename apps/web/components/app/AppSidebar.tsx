@@ -7,6 +7,7 @@ import {
     GitPullRequest,
     Settings,
     type LucideIcon,
+    Folder,
 } from 'lucide-react'
 import {
     Sidebar,
@@ -27,6 +28,7 @@ const navItems: {
 }[] = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/githubapp', label: 'GitHub App', icon: Github },
+    { href: '/repositories', label: 'Repositories', icon: Folder },
     { href: '/pullrequests', label: 'Pull requests', icon: GitPullRequest },
     { href: '/settings', label: 'Settings', icon: Settings },
 ]

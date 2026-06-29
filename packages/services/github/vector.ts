@@ -9,11 +9,16 @@ export function buildRepoNamespace(repoFullName: string) {
   return `${repoFullName.replace("/", "--")}--codebase`;
 }
 
+const UPSERT_BATCH_SIZE = 90;
 export async function saveChunksToPinecone(namespace: string, chunks: CodeChunk[]) {
   const index = getPineconeIndex();
-  await index.namespace(namespace).upsertRecords({
-    records: chunks.map((c) => ({ id: c.id, text: c.text, filePath: c.filePath })),
-  });
+  const records = chunks
+    .filter((c) => c.text.trim().length > 0)
+    .map((c) => ({ id: c.id, text: c.text, filePath: c.filePath }));
+  for (let start = 0; start < records.length; start += UPSERT_BATCH_SIZE) {
+    const batch = records.slice(start, start + UPSERT_BATCH_SIZE);
+    await index.namespace(namespace).upsertRecords({ records: batch });
+  }
 }
 
 export async function searchPrContext(namespace: string, query: string): Promise<string[]> {
@@ -29,7 +34,6 @@ export async function searchPrContext(namespace: string, query: string): Promise
   }
   return snippets;
 }
-const UPSERT_BATCH_SIZE = 90;
 
 export async function deleteRepoNamespace(namespace: string) {
   const index = getPineconeIndex();

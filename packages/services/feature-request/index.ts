@@ -85,7 +85,9 @@ async function getRequestStatus(requestId: number) {
 }
 
 export default class FeatureRequestService {
-  async submit(input: SubmitFeatureRequestInput): Promise<SubmitFeatureRequestOutput> {
+  async submitFeatureRequest(
+    input: SubmitFeatureRequestInput,
+  ): Promise<SubmitFeatureRequestOutput> {
     const customerEmail = input.customerEmail ?? input.userEmail;
     const customerName = input.customerName ?? input.userName ?? null;
 

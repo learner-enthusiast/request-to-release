@@ -10,14 +10,14 @@ const TAGS = ["Feature Requests"];
 const getPath = generatePath("/feature-requests");
 
 export const featureRequestRouter = router({
-  submit: authenticatedProcedure
+  submitNewFeatureRequest: authenticatedProcedure
     .meta({
       openapi: { method: "POST", path: getPath("/"), tags: TAGS },
     })
     .input(submitFeatureRequestMutationInputSchema)
     .output(submitFeatureRequestOutputSchema)
     .mutation(async ({ ctx, input }) => {
-      return featureRequestService.submit({
+      return featureRequestService.submitFeatureRequest({
         ...input,
         userId: ctx.user,
         userEmail: ctx.session.user.email,

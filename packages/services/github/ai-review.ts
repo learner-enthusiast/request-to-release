@@ -1,4 +1,4 @@
-import { db, eq } from "@repo/database";
+import { db, eq, sql } from "@repo/database";
 import { pullRequest, repoSync } from "@repo/database/schema";
 
 import { inngest } from "../inngest/client.js";
@@ -30,13 +30,17 @@ export const reviewPullRequest = inngest.createFunction(
       if (!updated) return errors.notFound(`Pull request not found: ${pullRequestId}`);
       return updated;
     });
-
-    const chunks = await step.run("breakdown-code", async () => {
+    const namespace = buildPrNamespace(pr.repoFullName, pr.prNumber);
+    const chunkCount = await step.run("chunk-and-save-vectors", async () => {
       const files = await getPullRequestFiles(pr.installationId, pr.repoFullName, pr.prNumber);
-      return chunkPrFiles(pr.prNumber, files);
+      const chunks = chunkPrFiles(pr.prNumber, files);
+      if (chunks.length === 0) return 0;
+
+      await saveChunksToPinecone(namespace, chunks);
+      return chunks.length;
     });
 
-    if (chunks.length === 0) {
+    if (chunkCount === 0) {
       await step.run("mark-reviewed-no-code", async () => {
         await db
           .update(pullRequest)
@@ -45,14 +49,6 @@ export const reviewPullRequest = inngest.createFunction(
       });
       return { pullRequestId, status: "reviewed", reason: "no code to review" };
     }
-
-    const namespace = buildPrNamespace(pr.repoFullName, pr.prNumber);
-
-    await step.run("save-vectors-to-pinecone", async () => {
-      await saveChunksToPinecone(namespace, chunks);
-    });
-
-    await step.sleep("wait-for-vectors-to-index", "10s");
 
     const repoContextSnippets = await step.run("search-repo-context", async () => {
       const [sync] = await db
@@ -86,8 +82,8 @@ export const reviewPullRequest = inngest.createFunction(
         .update(pullRequest)
         .set({
           status: "reviewed",
-          reviewComment: review,
-          reviewedAt: new Date(),
+          reviewComment: sql`array_append(coalesce(${pullRequest.reviewComment}, ARRAY[]::text[]), ${review})`,
+          reviewedAt: sql`array_append(coalesce(${pullRequest.reviewedAt}, ARRAY[]::timestamp[]), ${new Date()})`,
         })
         .where(eq(pullRequest.id, pullRequestId));
     });

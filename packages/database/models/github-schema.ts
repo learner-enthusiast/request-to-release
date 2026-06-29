@@ -38,8 +38,8 @@ export const pullRequest = pgTable(
     headSha: text("head_sha").notNull(),
     baseBranch: text("base_branch").notNull(),
     status: text("status").default("pending").notNull(),
-    reviewComment: text("review_comment"),
-    reviewedAt: timestamp("reviewed_at"),
+    reviewComment: text("review_comment").array(),
+    reviewedAt: timestamp("reviewed_at").array(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

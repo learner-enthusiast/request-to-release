@@ -1,4 +1,6 @@
 import {
+  submitClarificationAnswersMutationInputSchema,
+  submitClarificationAnswersOutputSchema,
   submitFeatureRequestMutationInputSchema,
   submitFeatureRequestOutputSchema,
 } from "@repo/services/feature-request/model";
@@ -22,6 +24,20 @@ export const featureRequestRouter = router({
         userId: ctx.user,
         userEmail: ctx.session.user.email,
         userName: ctx.session.user.name,
+      });
+    }),
+
+  submitClarificationAnswers: authenticatedProcedure
+    .meta({
+      openapi: { method: "POST", path: getPath("/clarifications/answers"), tags: TAGS },
+    })
+    .input(submitClarificationAnswersMutationInputSchema)
+    .output(submitClarificationAnswersOutputSchema)
+    .mutation(async ({ ctx, input }) => {
+      return featureRequestService.submitClarificationAnswers({
+        ...input,
+        userId: ctx.user,
+        userEmail: ctx.session.user.email,
       });
     }),
 });

@@ -1,4 +1,4 @@
-import { generateObject } from "ai";
+import { generateObject, generateText, Output } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { z } from "zod";
 import { env } from "../env.js";
@@ -79,21 +79,20 @@ Decide ONE outcome:
 - "ready_for_team": exceptionally clear; can skip summary and go straight to human team review.`;
 
 export async function runInitialClarifyDecision(ctx: RequestContext) {
-  const { object } = await generateObject({
+  const { output } = await generateText({
     model: openrouter(MODEL),
-    schema: initialDecisionSchema,
+    output: Output.object({ schema: initialDecisionSchema }),
     system: INITIAL_SYSTEM,
     prompt: formatPrompt(ctx),
   });
-  return object;
+  return output;
 }
-
 export async function runReviewClarificationsDecision(ctx: RequestContext) {
-  const { object } = await generateObject({
+  const { output } = await generateText({
     model: openrouter(MODEL),
-    schema: reviewDecisionSchema,
+    output: Output.object({ schema: reviewDecisionSchema }),
     system: REVIEW_SYSTEM,
     prompt: formatPrompt(ctx),
   });
-  return object;
+  return output;
 }
